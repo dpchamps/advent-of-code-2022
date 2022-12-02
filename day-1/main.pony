@@ -15,8 +15,8 @@ primitive Input
         end 
 
 primitive Utils
-    fun maybe_to_u32(input: String): (U32 val | None val) =>
-        try input.u32()? else None end
+    fun maybe_to_u32(): {(String): (U32 val | None val)} => 
+        {(input: String): (U32 val | None val) => try input.u32()? else None end }
     
     fun into_tuple_folder(acc: Array[Array[U32]], el: (U32 val | None val)): Array[Array[U32]] =>
         match el
@@ -37,7 +37,7 @@ primitive Utils
 primitive CalorieCounter
     fun find_elf_with_most_calories(list: Iter[String], count: USize): U32 ? => 
         let pairs = list
-            .map[(U32 val | None val)]({(x) => Utils.maybe_to_u32(x)})
+            .map[(U32 val | None val)](Utils.maybe_to_u32())
             .fold[Array[Array[U32]]](
                 Array[Array[U32]].init(Array[U32](1), 1),
                 {(acc, el) => Utils.into_tuple_folder(acc, el)}
