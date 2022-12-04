@@ -22,7 +22,7 @@ impl TryFrom<&str> for Segment {
     type Error = &'static str;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let lengths: Vec<String> = String::from(value).split("-").map(String::from).collect();
+        let lengths: Vec<String> = String::from(value).split('-').map(String::from).collect();
 
         match lengths.len() {
             2 => Ok(Segment {
@@ -42,7 +42,7 @@ impl TryFrom<String> for SegmentPair {
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         let split: Vec<Segment> = value
-            .split(",")
+            .split(',')
             .map(Segment::try_from)
             .collect::<Result<Vec<Segment>, &'static str>>()?;
 
@@ -99,7 +99,7 @@ fn main() -> std::io::Result<()> {
 mod day_4_tests {
     use crate::*;
 
-    const TEST_INPUT: &'static str = "2-4,6-8
+    const TEST_INPUT: &str = "2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7
@@ -133,5 +133,12 @@ mod day_4_tests {
             .expect("");
 
         assert_eq!(part_two(&lines), 4);
+    }
+
+    #[test]
+    fn solution_two() {
+        let lines = get_input();
+
+        assert_eq!(part_two(&lines), 770)
     }
 }
