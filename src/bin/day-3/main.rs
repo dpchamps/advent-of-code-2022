@@ -68,9 +68,7 @@ impl Rucksack {
     }
 
     pub fn find_common(&self) -> Vec<char> {
-        intersection_of_sets(&self.sets)
-            .iter().copied()
-            .collect()
+        intersection_of_sets(&self.sets).iter().copied().collect()
     }
 
     pub fn priority_of_common_items(&self) -> u64 {
