@@ -1,4 +1,4 @@
-use std::str::from_boxed_utf8_unchecked;
+
 
 struct StateParser {}
 
@@ -8,7 +8,7 @@ impl StateParser {
             .collect::<Vec<char>>()
             .chunks(4)
             .map(|register| match register.get(1) {
-                Some(value) => Ok(value.clone()),
+                Some(value) => Ok(*value),
                 None => Err(format!(
                     "Expected value in register, but got nothing. Input line: {}",
                     line
@@ -97,7 +97,7 @@ impl ProgramParser {
         let mut digit_buffer = String::from("");
 
         while let Some(c) = self.current() {
-            if !c.is_digit(10) {
+            if !c.is_ascii_digit() {
                 break;
             }
             self.eat_next();
@@ -156,7 +156,7 @@ impl ProgramParser {
 
     pub fn parse_program(&mut self) -> Result<Vec<Program>, String> {
         let mut program: Vec<Program> = vec![];
-        while let Some(_) = self.current() {
+        while self.current().is_some() {
             println!("parsing next instruction");
             program.push(self.parse_instruction()?)
         }
