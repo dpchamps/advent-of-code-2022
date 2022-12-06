@@ -1,5 +1,5 @@
+use advent_of_code_2022::core::get_data;
 use std::fmt::{Display, Formatter};
-use advent_of_code_2022::core::{get_data, get_lines};
 
 #[derive(Eq, PartialEq, Debug)]
 enum Value {
@@ -107,7 +107,8 @@ impl ProgramParser {
             MoveInstruction(
                 self.parse_int_value("move")?,
                 self.parse_int_value("from")?,
-                self.parse_int_value("to")?),
+                self.parse_int_value("to")?,
+            ),
         )))
     }
 
@@ -129,13 +130,15 @@ impl Display for Vm {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let max_register_len = self.registers.iter().map(|x| x.len()).max().expect("");
         let mut registers = String::new();
-        let register_list = (1..=self.registers.len()).map(|x| format!(" {}  ", x)).collect::<String>();
+        let register_list = (1..=self.registers.len())
+            .map(|x| format!(" {}  ", x))
+            .collect::<String>();
         for i in 0..=max_register_len {
-            let i = max_register_len-i;
+            let i = max_register_len - i;
             for register in self.registers.iter() {
-                match register.get(i){
+                match register.get(i) {
                     Some(content) => registers.push_str(&format!("[{}] ", content)),
-                    _ => registers.push_str("    ")
+                    _ => registers.push_str("    "),
                 }
             }
             registers.push('\n');
@@ -144,8 +147,7 @@ impl Display for Vm {
         write!(
             f,
             "VM State -----\n{}{}\n------------",
-            registers,
-            register_list
+            registers, register_list
         )
     }
 }
@@ -153,7 +155,7 @@ impl Display for Vm {
 impl Vm {
     fn exec_move(&mut self, m: usize, f: usize, t: usize) -> Result<(), String> {
         let from_length = self.registers[f].len();
-        let drain_range = from_length-m..from_length;
+        let drain_range = from_length - m..from_length;
         let mut to_append: Vec<char> = self.registers[f].drain(drain_range).collect();
         self.registers[t].append(&mut to_append);
 
@@ -163,9 +165,9 @@ impl Vm {
     fn execute_instruction(&mut self, instruction: &Instruction) -> Result<(), String> {
         match instruction {
             Instruction::MoveInstruction(MoveInstruction(
-                                             Value::Int(m),
-                                             Value::Int(f),
-                                             Value::Int(t),
+                Value::Int(m),
+                Value::Int(f),
+                Value::Int(t),
             )) => self.exec_move(*m, f - 1, t - 1),
             _ => Err(format!("Got an unknown instruction {:?}", instruction)),
         }
@@ -183,10 +185,12 @@ impl Vm {
     }
 
     pub fn get_tops_of_stacks(&self) -> String {
-        self.registers.iter().map(|reg| match reg.last() {
-            Some(c) => c.to_string(),
-            None => "".to_string()
-        })
+        self.registers
+            .iter()
+            .map(|reg| match reg.last() {
+                Some(c) => c.to_string(),
+                None => "".to_string(),
+            })
             .collect()
     }
 }
@@ -195,11 +199,16 @@ struct StateParser {}
 
 impl StateParser {
     fn get_max_line_len(lines: &[String]) -> usize {
-        lines.iter().map(|x| x.len()).max().expect("Got something unexpected for max_line_len")
+        lines
+            .iter()
+            .map(|x| x.len())
+            .max()
+            .expect("Got something unexpected for max_line_len")
     }
 
     fn parse_line(line: &String) -> Result<Vec<(usize, Option<char>)>, String> {
-        Ok(line.chars()
+        Ok(line
+            .chars()
             .collect::<Vec<char>>()
             .chunks(4)
             .map(|register| match register.get(1) {
@@ -217,14 +226,14 @@ impl StateParser {
     }
 
     pub fn create_vm_registers(input: &[String]) -> Result<Vec<Vec<char>>, String> {
-        let n_registers = (StateParser::get_max_line_len(input)+1) / 4;
+        let n_registers = (StateParser::get_max_line_len(input) + 1) / 4;
         let mut registers = vec![Vec::new(); n_registers];
 
-        for line in input.iter().take(input.len()-1) {
+        for line in input.iter().take(input.len() - 1) {
             for (register, maybe_val) in StateParser::parse_line(line)? {
                 match maybe_val {
                     Some(c) => registers[register].insert(0, c),
-                    None => ()
+                    None => (),
                 }
             }
         }
@@ -234,14 +243,21 @@ impl StateParser {
 }
 
 fn parse_input(input: &str) -> Result<(Vm, Vec<ProgramNode>), String> {
-    let split = input.split("\n\n").map(String::from).collect::<Vec<String>>();
+    let split = input
+        .split("\n\n")
+        .map(String::from)
+        .collect::<Vec<String>>();
     let registers_string = split.get(0).ok_or("Unexpected, couldn't find registers!")?;
-    let mut program_parser = ProgramParser::new(split.get(1).ok_or("Unexpected, couldn't find program!")?);
+    let mut program_parser =
+        ProgramParser::new(split.get(1).ok_or("Unexpected, couldn't find program!")?);
 
     return Ok((
         Vm {
             registers: StateParser::create_vm_registers(
-                &registers_string.lines().map(String::from).collect::<Vec<String>>(),
+                &registers_string
+                    .lines()
+                    .map(String::from)
+                    .collect::<Vec<String>>(),
             )?,
         },
         program_parser.parse_program()?,
@@ -249,7 +265,7 @@ fn parse_input(input: &str) -> Result<(Vm, Vec<ProgramNode>), String> {
 }
 
 fn part_one(input: &String) -> Result<String, String> {
-    let (mut vm, program) = parse_input(&input)?;
+    let (mut vm, program) = parse_input(input)?;
 
     vm.run_program(&program);
 
@@ -259,7 +275,10 @@ fn part_one(input: &String) -> Result<String, String> {
 fn main() -> std::io::Result<()> {
     let input = get_data("day-5")?;
 
-    println!("Part One: {}", part_one(&input).expect("Could not solve Part One"));
+    println!(
+        "Part One: {}",
+        part_one(&input).expect("Could not solve Part One")
+    );
     Ok(())
 }
 
@@ -345,10 +364,8 @@ move 2 from 2 to 1";
             Value::Int(2),
         ));
 
-
         vm.execute_instruction(&instruction)
             .expect("Could not execute instruction");
-
     }
 
     // #[test]
@@ -360,7 +377,7 @@ move 2 from 2 to 1";
     // }
 
     #[test]
-    fn part_two_example(){
+    fn part_two_example() {
         let (mut vm, program) = parse_input(INPUT).expect("Could not create input");
         vm.run_program(&program).expect("Failed to run program");
 
